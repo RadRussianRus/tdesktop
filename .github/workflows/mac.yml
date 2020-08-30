@@ -302,6 +302,22 @@ jobs:
 
           make -j$(nproc)
           sudo make install
+      - name: FFmpeg install.
+        run: |
+          cd $LibrariesPath
+          #List of files from cmake/external/ffmpeg/CMakeLists.txt.
+          copyLib() {
+            mkdir -p ffmpeg/$1
+            \cp -fR ffmpeg-cache/lib/$1.a ffmpeg/$1/$1.a
+          }
+          copyLib libavformat
+          copyLib libavcodec
+          copyLib libswresample
+          copyLib libswscale
+          copyLib libavutil
+
+          sudo cp -R ffmpeg-cache/. /usr/local/
+          sudo cp -R ffmpeg-cache/include/. ffmpeg/
 
       - name: Crashpad cache.
         id: cache-crashpad
