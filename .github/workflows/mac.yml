@@ -419,6 +419,7 @@ jobs:
   telegram:
     name: "MacOS: Telegram"
     runs-on: macos-latest
+    needs: dependencies
 
     strategy:
       matrix:
