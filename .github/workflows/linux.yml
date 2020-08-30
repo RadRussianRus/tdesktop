@@ -337,6 +337,11 @@ jobs:
           cd ..
           # rm -rf $opensslDir # Keep this folder for WebRTC.
 
+      - name: OpenSSL install.
+        run: |
+          cd $LibrariesPath
+          sudo cp -R openssl-cache/. /
+
       - name: Qt 5.12.8 cache.
         id: cache-qt
         uses: actions/cache@v2
@@ -639,17 +644,6 @@ jobs:
           sudo make install
           cd -
           rm -rf openal-soft
-
-      - name: OpenSSL cache.
-        id: cache-openssl
-        uses: actions/cache@v2
-        with:
-          path: ${{ env.LibrariesPath }}/openssl-cache
-          key: ${{ runner.OS }}-${{ env.OPENSSL_VER }}-${{ env.CACHE_KEY }}
-      - name: OpenSSL install.
-        run: |
-          cd $LibrariesPath
-          sudo cp -R openssl-cache/. /
 
       - name: Libwayland.
         run: |
