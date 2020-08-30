@@ -691,6 +691,22 @@ jobs:
           cd -
           rm -rf openal-soft
 
+      - name: Libxkbcommon.
+        run: |
+          cd $LibrariesPath
+
+          git clone -b xkbcommon-0.8.4 --depth=1 $GIT/xkbcommon/libxkbcommon.git
+          cd libxkbcommon
+          ./autogen.sh \
+          --disable-docs \
+          --disable-wayland \
+          --with-xkb-config-root=/usr/share/X11/xkb \
+          --with-x-locale-root=/usr/share/X11/locale
+          make -j$(nproc)
+          sudo make install
+          cd ..
+          rm -rf libxkbcommon
+
       - name: Libwayland.
         run: |
           cd $LibrariesPath
