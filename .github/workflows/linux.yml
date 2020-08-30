@@ -296,6 +296,21 @@ jobs:
           sudo make DESTDIR="$LibrariesPath/ffmpeg-cache" install
           cd ..
           rm -rf ffmpeg
+      - name: FFmpeg install.
+        run: |
+          cd $LibrariesPath
+          #List of files from cmake/external/ffmpeg/CMakeLists.txt.
+          copyLib() {
+            mkdir -p ffmpeg/$1
+            yes | cp -i ffmpeg-cache/usr/local/lib/$1.a ffmpeg/$1/$1.a
+          }
+          copyLib libavformat
+          copyLib libavcodec
+          copyLib libswresample
+          copyLib libswscale
+          copyLib libavutil
+
+          sudo cp -R ffmpeg-cache/. /
 
       - name: OpenAL Soft.
         run: |
