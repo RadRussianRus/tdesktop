@@ -534,6 +534,17 @@ jobs:
           path: ${{ env.LibrariesPath }}/openssl_${{ env.OPENSSL_VER }}
           key: ${{ runner.OS }}-${{ env.OPENSSL_VER }}-${{ env.CACHE_KEY }}
 
+      - name: Opus cache.
+        id: cache-opus
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.LibrariesPath }}/opus
+          key: ${{ runner.OS }}-opus-${{ env.CACHE_KEY }}
+      - name: Opus install.
+        run: |
+          cd $LibrariesPath/opus
+          sudo make install
+
       - name: Libiconv cache.
         id: cache-libiconv
         uses: actions/cache@v2
