@@ -383,7 +383,6 @@ jobs:
     name: "Windows: Telegram"
     runs-on: windows-latest
     needs: dependencies
-    if: env.ONLY_CACHE == 'false'
 
     strategy:
       matrix:
@@ -542,6 +541,7 @@ jobs:
           echo "::set-env name=TDESKTOP_BUILD_DEFINE::$DEFINE"
 
       - name: Telegram Desktop build.
+        if: env.ONLY_CACHE == 'false'
         shell: cmd
         run: |
           cd %REPO_NAME%\Telegram
