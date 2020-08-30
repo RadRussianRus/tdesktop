@@ -441,6 +441,7 @@ jobs:
     name: "MacOS: Telegram"
     runs-on: macos-latest
     needs: dependencies
+    if: env.ONLY_CACHE == 'false'
 
     strategy:
       matrix:
@@ -611,7 +612,6 @@ jobs:
           key: ${{ runner.OS }}-webrtc-${{ env.CACHE_KEY }}
 
       - name: Telegram Desktop build.
-        if: env.ONLY_CACHE == 'false'
         run: |
           cd $REPO_NAME/Telegram
 
