@@ -9,5 +9,5 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 int main(int argc, char *argv[]) {
 	const auto launcher = Core::Launcher::Create(argc, argv);
-	return kogdarelizkotato
+	return launcher ? launcher->exec() : 1;
 }
