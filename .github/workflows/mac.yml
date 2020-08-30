@@ -40,6 +40,23 @@ on:
       - 'Telegram/SourceFiles/platform/linux/**'
       - 'Telegram/configure.bat'
 
+env:
+  MIN_MAC: "-mmacosx-version-min=10.12"
+  UNGUARDED: "-Werror=unguarded-availability-new"
+  GIT: "https://github.com"
+  PREFIX: "/usr/local/macos"
+  MACOSX_DEPLOYMENT_TARGET: "10.12"
+  XZ: "xz-5.2.4"
+  QT: "5_12_8"
+  OPENSSL_VER: "1_1_1"
+  QT_PREFIX: "/usr/local/desktop-app/Qt-5.12.8"
+  LIBICONV_VER: "libiconv-1.16"
+  UPLOAD_ARTIFACT: "false"
+  ONLY_CACHE: "false"
+  MANUAL_CACHING: "2"
+  DOC_PATH: "docs/building-xcode.md"
+  AUTO_CACHING: "1"
+
 jobs:
 
   dependencies:
@@ -50,22 +67,6 @@ jobs:
       matrix:
         defines:
           - ""
-    env:
-      MIN_MAC: "-mmacosx-version-min=10.12"
-      UNGUARDED: "-Werror=unguarded-availability-new"
-      GIT: "https://github.com"
-      PREFIX: "/usr/local/macos"
-      MACOSX_DEPLOYMENT_TARGET: "10.12"
-      XZ: "xz-5.2.4"
-      QT: "5_12_8"
-      OPENSSL_VER: "1_1_1"
-      QT_PREFIX: "/usr/local/desktop-app/Qt-5.12.8"
-      LIBICONV_VER: "libiconv-1.16"
-      UPLOAD_ARTIFACT: "false"
-      ONLY_CACHE: "false"
-      MANUAL_CACHING: "2"
-      DOC_PATH: "docs/building-xcode.md"
-      AUTO_CACHING: "1"
 
     steps:
       - name: Get repository name.
@@ -445,22 +446,6 @@ jobs:
       matrix:
         defines:
           - ""
-    env:
-      MIN_MAC: "-mmacosx-version-min=10.12"
-      UNGUARDED: "-Werror=unguarded-availability-new"
-      GIT: "https://github.com"
-      PREFIX: "/usr/local/macos"
-      MACOSX_DEPLOYMENT_TARGET: "10.12"
-      XZ: "xz-5.2.4"
-      QT: "5_12_8"
-      OPENSSL_VER: "1_1_1"
-      QT_PREFIX: "/usr/local/desktop-app/Qt-5.12.8"
-      LIBICONV_VER: "libiconv-1.16"
-      UPLOAD_ARTIFACT: "false"
-      ONLY_CACHE: "false"
-      MANUAL_CACHING: "2"
-      DOC_PATH: "docs/building-xcode.md"
-      AUTO_CACHING: "1"
 
     steps:
       - name: Get repository name.

@@ -42,6 +42,19 @@ on:
       - 'Telegram/configure.bat'
       - 'Telegram/Telegram.plist'
 
+env:
+  GIT: "https://github.com"
+  QT: "5_12_8"
+  QT_PREFIX: "/usr/local/desktop-app/Qt-5.12.8"
+  OPENSSL_VER: "1_1_1"
+  OPENSSL_PREFIX: "/usr/local/desktop-app/openssl-1.1.1"
+  CMAKE_VER: "3.17.0"
+  UPLOAD_ARTIFACT: "false"
+  ONLY_CACHE: "false"
+  MANUAL_CACHING: "6"
+  DOC_PATH: "docs/building-cmake.md"
+  AUTO_CACHING: "1"
+
 jobs:
 
   dependencies:
@@ -53,19 +66,6 @@ jobs:
       matrix:
         defines:
           - ""
-
-    env:
-      GIT: "https://github.com"
-      QT: "5_12_8"
-      QT_PREFIX: "/usr/local/desktop-app/Qt-5.12.8"
-      OPENSSL_VER: "1_1_1"
-      OPENSSL_PREFIX: "/usr/local/desktop-app/openssl-1.1.1"
-      CMAKE_VER: "3.17.0"
-      UPLOAD_ARTIFACT: "false"
-      ONLY_CACHE: "false"
-      MANUAL_CACHING: "6"
-      DOC_PATH: "docs/building-cmake.md"
-      AUTO_CACHING: "1"
 
     steps:
       - name: Get repository name.
@@ -525,19 +525,6 @@ jobs:
           - ""
           - "DESKTOP_APP_DISABLE_DBUS_INTEGRATION"
           - "TDESKTOP_DISABLE_GTK_INTEGRATION"
-
-    env:
-      GIT: "https://github.com"
-      QT: "5_12_8"
-      QT_PREFIX: "/usr/local/desktop-app/Qt-5.12.8"
-      OPENSSL_VER: "1_1_1"
-      OPENSSL_PREFIX: "/usr/local/desktop-app/openssl-1.1.1"
-      CMAKE_VER: "3.17.0"
-      UPLOAD_ARTIFACT: "false"
-      ONLY_CACHE: "false"
-      MANUAL_CACHING: "6"
-      DOC_PATH: "docs/building-cmake.md"
-      AUTO_CACHING: "1"
 
     steps:
       - name: Get repository name.

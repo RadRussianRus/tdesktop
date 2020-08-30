@@ -45,6 +45,19 @@ on:
       - 'Telegram/configure.sh'
       - 'Telegram/Telegram.plist'
 
+env:
+  SDK: "10.0.18362.0"
+  VC: "call vcvars32.bat && cd Libraries"
+  GIT: "https://github.com"
+  QT: "5_12_8"
+  QT_VER: "5.12.8"
+  OPENSSL_VER: "1_1_1"
+  UPLOAD_ARTIFACT: "false"
+  ONLY_CACHE: "false"
+  MANUAL_CACHING: "2"
+  DOC_PATH: "docs/building-msvc.md"
+  AUTO_CACHING: "1"
+
 jobs:
 
   dependencies:
@@ -55,18 +68,6 @@ jobs:
       matrix:
         defines:
           - ""
-    env:
-      SDK: "10.0.18362.0"
-      VC: "call vcvars32.bat && cd Libraries"
-      GIT: "https://github.com"
-      QT: "5_12_8"
-      QT_VER: "5.12.8"
-      OPENSSL_VER: "1_1_1"
-      UPLOAD_ARTIFACT: "false"
-      ONLY_CACHE: "false"
-      MANUAL_CACHING: "2"
-      DOC_PATH: "docs/building-msvc.md"
-      AUTO_CACHING: "1"
 
     steps:
       - name: Get repository name.
@@ -387,18 +388,6 @@ jobs:
       matrix:
         defines:
           - ""
-    env:
-      SDK: "10.0.18362.0"
-      VC: "call vcvars32.bat && cd Libraries"
-      GIT: "https://github.com"
-      QT: "5_12_8"
-      QT_VER: "5.12.8"
-      OPENSSL_VER: "1_1_1"
-      UPLOAD_ARTIFACT: "false"
-      ONLY_CACHE: "false"
-      MANUAL_CACHING: "2"
-      DOC_PATH: "docs/building-msvc.md"
-      AUTO_CACHING: "1"
 
     steps:
       - name: Get repository name.
