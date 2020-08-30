@@ -171,6 +171,10 @@ jobs:
           ./autogen.sh
           ./configure
           make -j$(nproc)
+      - name: Opus install.
+        run: |
+          cd $LibrariesPath/opus
+          sudo make install
 
       - name: FFmpeg cache.
         id: cache-ffmpeg
@@ -571,18 +575,6 @@ jobs:
           rm $file
 
           cmake --version
-
-      - name: Opus cache.
-        id: cache-opus
-        uses: actions/cache@v2
-        with:
-          path: ${{ env.LibrariesPath }}/opus
-          key: ${{ runner.OS }}-opus-${{ env.CACHE_KEY }}
-
-      - name: Opus install.
-        run: |
-          cd $LibrariesPath/opus
-          sudo make install
 
       - name: Libva.
         run: |
