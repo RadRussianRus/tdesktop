@@ -63,11 +63,8 @@ jobs:
   dependencies:
     name: "Windows: dependencies"
     runs-on: windows-latest
-
-    strategy:
-      matrix:
-        defines:
-          - ""
+    outputs:
+      cache_key: ${{ steps.step_cache_key.outputs.cache_key }}
 
     steps:
       - name: Get repository name.
@@ -101,13 +98,16 @@ jobs:
           echo ::set-env name=LibrariesPath::%cd%
 
       - name: Generate cache key.
+        id: step_cache_key
         shell: bash
         run: |
           if [ "$AUTO_CACHING" == "1" ]; then
             thisFile=$REPO_NAME/.github/workflows/win.yml
             echo `md5sum $thisFile | awk '{ print $1 }'` >> CACHE_KEY.txt
           fi
-          echo ::set-env name=CACHE_KEY::`md5sum CACHE_KEY.txt | awk '{ print $1 }'`
+          localKey=`md5sum CACHE_KEY.txt | awk '{ print $1 }'`
+          echo ::set-env name=CACHE_KEY::$localKey
+          echo ::set-output name=cache_key::$localKey
 
       - name: Choco installs.
         run: |
@@ -389,6 +389,9 @@ jobs:
         defines:
           - ""
 
+    env:
+      CACHE_KEY: ${{ needs.dependencies.outputs.cache_key }}
+
     steps:
       - name: Get repository name.
         shell: bash
@@ -406,28 +409,13 @@ jobs:
           echo ::add-path::C:\Strawberry\perl\bin\
           echo ::add-path::"%programfiles%\NASM"
 
-          C:
-          cd "%programfiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\"
-          echo ::add-path::%cd%
-
-          call vcvars32.bat
-          D:
-          cd %GITHUB_WORKSPACE%
-          msbuild -version > CACHE_KEY.txt
-          echo %MANUAL_CACHING% >> CACHE_KEY.txt
-
           mkdir Libraries
           cd Libraries
           echo ::set-env name=LibrariesPath::%cd%
 
-      - name: Generate cache key.
-        shell: bash
-        run: |
-          if [ "$AUTO_CACHING" == "1" ]; then
-            thisFile=$REPO_NAME/.github/workflows/win.yml
-            echo `md5sum $thisFile | awk '{ print $1 }'` >> CACHE_KEY.txt
-          fi
-          echo ::set-env name=CACHE_KEY::`md5sum CACHE_KEY.txt | awk '{ print $1 }'`
+          C:
+          cd "%programfiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\"
+          echo ::add-path::%cd%
 
       - name: Choco installs.
         run: |
@@ -442,20 +430,6 @@ jobs:
           git clone $GIT/desktop-app/patches.git
           cd Patches
           eval $checkoutCommit
-
-      - name: Find any version of Python 2.
-        shell: cmd
-        run: |
-          echo Find any version of Python 2.
-          for /D %%a in (C:\hostedtoolcache\windows\Python\2.*) do (
-            SET PY2=%%a\x64
-          )
-          if [%PY2%] == [] (
-            echo Python 2 is not found.
-            exit 1
-          )
-          echo Found %PY2%.
-          echo ::set-env name=PY2::%PY2%
 
       - name: LZMA.
         shell: cmd
