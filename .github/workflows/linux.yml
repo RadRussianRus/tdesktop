@@ -83,6 +83,8 @@ jobs:
       - name: Apt install gcc8.
         shell: bash
         run: |
+          sudo apt-get update
+          sudo apt-get install software-properties-common -y && \
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
           sudo apt-get update && \
           sudo apt-get install gcc-8 g++-8 -y && \
@@ -175,8 +177,6 @@ jobs:
         if: env.NEED_REBUILD == 'true'
         shell: bash
         run: |
-          sudo apt-get update
-          sudo apt-get install software-properties-common -y && \
           sudo add-apt-repository ppa:git-core/ppa -y && \
           sudo apt-get update && \
           sudo apt-get install git libexif-dev liblzma-dev libz-dev libssl-dev \
