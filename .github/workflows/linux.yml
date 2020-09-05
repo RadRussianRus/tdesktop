@@ -189,7 +189,10 @@ jobs:
           libxcb-render-util0-dev libxcb-util0-dev libxcb-xkb-dev libxrender-dev \
           libasound-dev libpulse-dev libxcb-sync0-dev libxcb-randr0-dev libegl1-mesa-dev \
           libx11-xcb-dev libffi-dev libncurses5-dev pkg-config texi2html bison yasm \
-          zlib1g-dev xutils-dev python-xcbgen chrpath gperf wget -y --force-yes
+          zlib1g-dev xutils-dev python-xcbgen chrpath gperf wget -y --force-yes && \
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 60 && \
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 60 && \
+          sudo update-alternatives --config gcc
 
       - name: Patches.
         if: env.NEED_REBUILD == 'true'
