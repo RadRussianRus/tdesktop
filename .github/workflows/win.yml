@@ -109,11 +109,75 @@ jobs:
           echo ::set-env name=CACHE_KEY::$localKey
           echo ::set-output name=cache_key::$localKey
 
+      - name: OpenSSL cache.
+        id: cache-openssl
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.LibrariesPath }}/openssl_${{ env.OPENSSL_VER }}
+          key: ${{ runner.OS }}-${{ env.CACHE_KEY }}-${{ env.OPENSSL_VER }}
+
+      - name: OpenAL Soft cache.
+        id: cache-openal
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.LibrariesPath }}/openal-soft
+          key: ${{ runner.OS }}-openal-soft-${{ env.CACHE_KEY }}
+
+      - name: Breakpad cache.
+        id: cache-breakpad
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.LibrariesPath }}/breakpad
+          key: ${{ runner.OS }}-breakpad-${{ env.CACHE_KEY }}-${{ hashFiles('**/breakpad.diff') }}
+
+      - name: Opus cache.
+        id: cache-opus
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.LibrariesPath }}/opus
+          key: ${{ runner.OS }}-opus-${{ env.CACHE_KEY }}
+
+      - name: FFmpeg cache.
+        id: cache-ffmpeg
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.LibrariesPath }}/ffmpeg
+          key: ${{ runner.OS }}-ffmpeg-${{ env.CACHE_KEY }}-2-${{ hashFiles('**/build_ffmpeg_win.sh') }}
+
+      - name: Qt 5.12.8 cache.
+        id: cache-qt
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.LibrariesPath }}/Qt-${{ env.QT_VER }}
+          key: ${{ runner.OS }}-qt-${{ env.CACHE_KEY }}-${{ hashFiles('**/qtbase_5_12_8/*') }}
+
+      - name: WebRTC cache.
+        id: cache-webrtc
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.LibrariesPath }}/tg_owt
+          key: ${{ runner.OS }}-webrtc-${{ env.CACHE_KEY }}
+
+      - name: Check if all caches are present.
+        if: >
+          steps.cache-openssl.outputs.cache-hit  != 'true' ||
+          steps.cache-openal.outputs.cache-hit   != 'true' ||
+          steps.cache-breakpad.outputs.cache-hit != 'true' ||
+          steps.cache-opus.outputs.cache-hit     != 'true' ||
+          steps.cache-ffmpeg.outputs.cache-hit   != 'true' ||
+          steps.cache-qt.outputs.cache-hit       != 'true' ||
+          steps.cache-webrtc.outputs.cache-hit   != 'true'
+        shell: bash
+        run: |
+          echo ::set-env name=NEED_REBUILD::true
+
       - name: Choco installs.
+        if: env.NEED_REBUILD == 'true'
         run: |
           choco install --no-progress -y nasm yasm jom ninja
 
       - name: Patches.
+        if: env.NEED_REBUILD == 'true'
         shell: bash
         run: |
           echo "Find necessary commit from doc."
@@ -124,6 +188,7 @@ jobs:
           eval $checkoutCommit
 
       - name: Find any version of Python 2.
+        if: env.NEED_REBUILD == 'true'
         shell: cmd
         run: |
           echo Find any version of Python 2.
@@ -137,14 +202,10 @@ jobs:
           echo Found %PY2%.
           echo ::set-env name=PY2::%PY2%
 
-      - name: OpenSSL cache.
-        id: cache-openssl
-        uses: actions/cache@v2
-        with:
-          path: ${{ env.LibrariesPath }}/openssl_${{ env.OPENSSL_VER }}
-          key: ${{ runner.OS }}-${{ env.CACHE_KEY }}-${{ env.OPENSSL_VER }}
       - name: OpenSSL.
-        if: steps.cache-openssl.outputs.cache-hit != 'true'
+        if: >
+          steps.cache-openssl.outputs.cache-hit != 'true' &&
+          env.NEED_REBUILD == 'true'
         shell: cmd
         run: |
           %VC%
@@ -170,15 +231,11 @@ jobs:
           rmdir /S /Q test
           rmdir /S /Q .git
 
-      - name: OpenAL Soft cache.
-        id: cache-openal
-        uses: actions/cache@v2
-        with:
-          path: ${{ env.LibrariesPath }}/openal-soft
-          key: ${{ runner.OS }}-openal-soft-${{ env.CACHE_KEY }}
       - name: OpenAL Soft.
         shell: cmd
-        if: steps.cache-openal.outputs.cache-hit != 'true'
+        if: >
+          steps.cache-openal.outputs.cache-hit != 'true' &&
+          env.NEED_REBUILD == 'true'
         run: |
           %VC%
 
@@ -194,18 +251,14 @@ jobs:
 
           msbuild -m OpenAL.vcxproj /property:Configuration=Debug
 
-      - name: Breakpad cache.
-        id: cache-breakpad
-        uses: actions/cache@v2
-        with:
-          path: ${{ env.LibrariesPath }}/breakpad
-          key: ${{ runner.OS }}-breakpad-${{ env.CACHE_KEY }}-${{ hashFiles('**/breakpad.diff') }}
       - name: Breakpad.
         env:
           GYP_MSVS_OVERRIDE_PATH: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\'
           GYP_MSVS_VERSION: 2019
         shell: cmd
-        if: steps.cache-breakpad.outputs.cache-hit != 'true'
+        if: >
+          steps.cache-breakpad.outputs.cache-hit != 'true' &&
+          env.NEED_REBUILD == 'true'
         run: |
           cd %LibrariesPath%
 
@@ -233,14 +286,10 @@ jobs:
           call vcvars32.bat
           msbuild -m dump_syms.vcxproj /property:Configuration=Release
 
-      - name: Opus cache.
-        id: cache-opus
-        uses: actions/cache@v2
-        with:
-          path: ${{ env.LibrariesPath }}/opus
-          key: ${{ runner.OS }}-opus-${{ env.CACHE_KEY }}
       - name: Opus.
-        if: steps.cache-opus.outputs.cache-hit != 'true'
+        if: >
+          steps.cache-opus.outputs.cache-hit != 'true' &&
+          env.NEED_REBUILD == 'true'
         shell: cmd
         run: |
           %VC%
@@ -252,14 +301,10 @@ jobs:
           msbuild -m opus.sln /property:Configuration=Debug /property:Platform="Win32"
           msbuild -m opus.sln /property:Configuration=Release /property:Platform="Win32"
 
-      - name: FFmpeg cache.
-        id: cache-ffmpeg
-        uses: actions/cache@v2
-        with:
-          path: ${{ env.LibrariesPath }}/ffmpeg
-          key: ${{ runner.OS }}-ffmpeg-${{ env.CACHE_KEY }}-2-${{ hashFiles('**/build_ffmpeg_win.sh') }}
       - name: FFmpeg.
-        if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
+        if: >
+          steps.cache-ffmpeg.outputs.cache-hit != 'true' &&
+          env.NEED_REBUILD == 'true'
         shell: cmd
         run: |
           %VC%
@@ -274,14 +319,10 @@ jobs:
 
           rmdir /S /Q .git
 
-      - name: Qt 5.12.8 cache.
-        id: cache-qt
-        uses: actions/cache@v2
-        with:
-          path: ${{ env.LibrariesPath }}/Qt-${{ env.QT_VER }}
-          key: ${{ runner.OS }}-qt-${{ env.CACHE_KEY }}-${{ hashFiles('**/qtbase_5_12_8/*') }}
       - name: Configure Qt 5.12.8.
-        if: steps.cache-qt.outputs.cache-hit != 'true'
+        if: >
+          steps.cache-qt.outputs.cache-hit != 'true' &&
+          env.NEED_REBUILD == 'true'
         shell: cmd
         run: |
           %VC%
@@ -316,7 +357,9 @@ jobs:
           -nomake tests ^
           -platform win32-msvc
       - name: Qt 5.12.8 build.
-        if: steps.cache-qt.outputs.cache-hit != 'true'
+        if: >
+          steps.cache-qt.outputs.cache-hit != 'true' &&
+          env.NEED_REBUILD == 'true'
         shell: cmd
         run: |
           %VC%
@@ -328,14 +371,10 @@ jobs:
           cd ..
           rmdir /S /Q qt_%QT%
 
-      - name: WebRTC cache.
-        id: cache-webrtc
-        uses: actions/cache@v2
-        with:
-          path: ${{ env.LibrariesPath }}/tg_owt
-          key: ${{ runner.OS }}-webrtc-${{ env.CACHE_KEY }}
       - name: WebRTC.
-        if: steps.cache-webrtc.outputs.cache-hit != 'true'
+        if: >
+          steps.cache-webrtc.outputs.cache-hit != 'true' &&
+          env.NEED_REBUILD == 'true'
         shell: cmd
         run: |
           %VC%

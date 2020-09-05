@@ -79,8 +79,6 @@ jobs:
         id: step_cache_key
         run: |
           sudo chown -R `whoami`:admin /usr/local/share
-          brew install automake fdk-aac lame libass libtool libvorbis libvpx \
-          ninja opus sdl shtool texi2html theora x264 xvid yasm pkg-config
 
           sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
@@ -103,7 +101,76 @@ jobs:
           cd Libraries/macos
           echo ::set-env name=LibrariesPath::`pwd`
 
+      - name: OpenSSL cache.
+        id: cache-openssl
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.LibrariesPath }}/openssl_${{ env.OPENSSL_VER }}
+          key: ${{ runner.OS }}-${{ env.OPENSSL_VER }}-${{ env.CACHE_KEY }}
+
+      - name: Opus cache.
+        id: cache-opus
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.LibrariesPath }}/opus
+          key: ${{ runner.OS }}-opus-${{ env.CACHE_KEY }}
+
+      - name: Libiconv cache.
+        id: cache-libiconv
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.LibrariesPath }}/${{ env.LIBICONV_VER }}
+          key: ${{ runner.OS }}-${{ env.LIBICONV_VER }}-${{ env.CACHE_KEY }}
+
+      - name: FFmpeg cache.
+        id: cache-ffmpeg
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.LibrariesPath }}/ffmpeg-cache
+          key: ${{ runner.OS }}-ffmpeg-${{ env.CACHE_KEY }}
+
+      - name: Crashpad cache.
+        id: cache-crashpad
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.LibrariesPath }}/crashpad
+          key: ${{ runner.OS }}-crashpad-${{ env.CACHE_KEY }}-${{ hashFiles('**/crashpad.diff') }}-${{ hashFiles('**/mini_chromium.diff') }}
+
+      - name: Qt 5.12.8 cache.
+        id: cache-qt
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.LibrariesPath }}/qt-cache
+          key: ${{ runner.OS }}-qt-${{ env.CACHE_KEY }}-${{ hashFiles('**/qtbase_5_12_8/*') }}
+
+      - name: WebRTC cache.
+        id: cache-webrtc
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.LibrariesPath }}/tg_owt
+          key: ${{ runner.OS }}-webrtc-${{ env.CACHE_KEY }}
+
+      - name: Check if all caches are present.
+        if: >
+          steps.cache-openssl.outputs.cache-hit  != 'true' ||
+          steps.cache-opus.outputs.cache-hit     != 'true' ||
+          steps.cache-libiconv.outputs.cache-hit != 'true' ||
+          steps.cache-ffmpeg.outputs.cache-hit   != 'true' ||
+          steps.cache-crashpad.outputs.cache-hit != 'true' ||
+          steps.cache-qt.outputs.cache-hit       != 'true' ||
+          steps.cache-webrtc.outputs.cache-hit   != 'true'
+        shell: bash
+        run: |
+          echo ::set-env name=NEED_REBUILD::true
+
+      - name: Brew install.
+        if: env.NEED_REBUILD == 'true'
+        run: |
+          brew install automake fdk-aac lame libass libtool libvorbis libvpx \
+          ninja opus sdl shtool texi2html theora x264 xvid yasm pkg-config
+
       - name: Patches.
+        if: env.NEED_REBUILD == 'true'
         run: |
           echo "Find necessary commit from doc."
           checkoutCommit=$(grep -A 1 "cd patches" $REPO_NAME/$DOC_PATH | sed -n 2p)
@@ -112,14 +179,10 @@ jobs:
           cd Patches
           eval $checkoutCommit
 
-      - name: OpenSSL cache.
-        id: cache-openssl
-        uses: actions/cache@v2
-        with:
-          path: ${{ env.LibrariesPath }}/openssl_${{ env.OPENSSL_VER }}
-          key: ${{ runner.OS }}-${{ env.OPENSSL_VER }}-${{ env.CACHE_KEY }}
       - name: OpenSSL.
-        if: steps.cache-openssl.outputs.cache-hit != 'true'
+        if: >
+          steps.cache-openssl.outputs.cache-hit != 'true' &&
+          env.NEED_REBUILD == 'true'
         run: |
           cd $LibrariesPath
 
@@ -143,14 +206,10 @@ jobs:
           copyLib libcrypto
           sudo cp -R include/. $SSL_DIR/include/
 
-      - name: Opus cache.
-        id: cache-opus
-        uses: actions/cache@v2
-        with:
-          path: ${{ env.LibrariesPath }}/opus
-          key: ${{ runner.OS }}-opus-${{ env.CACHE_KEY }}
       - name: Opus.
-        if: steps.cache-opus.outputs.cache-hit != 'true'
+        if: >
+          steps.cache-opus.outputs.cache-hit != 'true' &&
+          env.NEED_REBUILD == 'true'
         run: |
           cd $LibrariesPath
 
@@ -165,14 +224,10 @@ jobs:
           cd $LibrariesPath/opus
           sudo make install
 
-      - name: Libiconv cache.
-        id: cache-libiconv
-        uses: actions/cache@v2
-        with:
-          path: ${{ env.LibrariesPath }}/${{ env.LIBICONV_VER }}
-          key: ${{ runner.OS }}-${{ env.LIBICONV_VER }}-${{ env.CACHE_KEY }}
       - name: Libiconv.
-        if: steps.cache-libiconv.outputs.cache-hit != 'true'
+        if: >
+          steps.cache-libiconv.outputs.cache-hit != 'true' &&
+          env.NEED_REBUILD == 'true'
         run: |
           cd $LibrariesPath
 
@@ -182,14 +237,10 @@ jobs:
           CFLAGS="$MIN_MAC $UNGUARDED" CPPFLAGS="$MIN_MAC $UNGUARDED" LDFLAGS="$MIN_MAC" ./configure --enable-static --prefix=$PREFIX
           make -j$(nproc)
 
-      - name: FFmpeg cache.
-        id: cache-ffmpeg
-        uses: actions/cache@v2
-        with:
-          path: ${{ env.LibrariesPath }}/ffmpeg-cache
-          key: ${{ runner.OS }}-ffmpeg-${{ env.CACHE_KEY }}
       - name: FFmpeg.
-        if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
+        if: >
+          steps.cache-ffmpeg.outputs.cache-hit != 'true' &&
+          env.NEED_REBUILD == 'true'
         run: |
           cd $LibrariesPath
 
@@ -304,6 +355,7 @@ jobs:
           make -j$(nproc)
           sudo make install
       - name: FFmpeg install.
+        if: env.NEED_REBUILD == 'true'
         run: |
           cd $LibrariesPath
           #List of files from cmake/external/ffmpeg/CMakeLists.txt.
@@ -320,14 +372,10 @@ jobs:
           sudo cp -R ffmpeg-cache/. /usr/local/
           sudo cp -R ffmpeg-cache/include/. ffmpeg/
 
-      - name: Crashpad cache.
-        id: cache-crashpad
-        uses: actions/cache@v2
-        with:
-          path: ${{ env.LibrariesPath }}/crashpad
-          key: ${{ runner.OS }}-crashpad-${{ env.CACHE_KEY }}-${{ hashFiles('**/crashpad.diff') }}-${{ hashFiles('**/mini_chromium.diff') }}
       - name: Crashpad.
-        if: steps.cache-crashpad.outputs.cache-hit != 'true'
+        if: >
+          steps.cache-crashpad.outputs.cache-hit != 'true' &&
+          env.NEED_REBUILD == 'true'
         run: |
           cd Libraries
           echo Install GYP for Crashpad.
@@ -359,21 +407,19 @@ jobs:
           build/gyp_crashpad.py -Dmac_deployment_target=10.10
           ninja -C out/Debug
 
-      - name: Qt 5.12.8 cache.
-        id: cache-qt
-        uses: actions/cache@v2
-        with:
-          path: ${{ env.LibrariesPath }}/qt-cache
-          key: ${{ runner.OS }}-qt-${{ env.CACHE_KEY }}-${{ hashFiles('**/qtbase_5_12_8/*') }}
       - name: Use cached Qt 5.12.8.
-        if: steps.cache-qt.outputs.cache-hit == 'true'
+        if: >
+          steps.cache-qt.outputs.cache-hit == 'true' &&
+          env.NEED_REBUILD == 'true'
         run: |
           cd $LibrariesPath
           mv qt-cache Qt-5.12.8
           sudo mkdir -p $QT_PREFIX
           sudo mv -f Qt-5.12.8 "$(dirname "$QT_PREFIX")"/
       - name: Qt 5.12.8 build.
-        if: steps.cache-qt.outputs.cache-hit != 'true'
+        if: >
+          steps.cache-qt.outputs.cache-hit != 'true' &&
+          env.NEED_REBUILD == 'true'
         run: |
           cd $LibrariesPath
 
@@ -407,14 +453,10 @@ jobs:
           make clean
           cp -r $QT_PREFIX $LibrariesPath/qt-cache
 
-      - name: WebRTC cache.
-        id: cache-webrtc
-        uses: actions/cache@v2
-        with:
-          path: ${{ env.LibrariesPath }}/tg_owt
-          key: ${{ runner.OS }}-webrtc-${{ env.CACHE_KEY }}
       - name: WebRTC.
-        if: steps.cache-webrtc.outputs.cache-hit != 'true'
+        if: >
+          steps.cache-webrtc.outputs.cache-hit != 'true' &&
+          env.NEED_REBUILD == 'true'
         run: |
           cd $LibrariesPath
 
@@ -588,7 +630,9 @@ jobs:
           path: ${{ env.LibrariesPath }}/qt-cache
           key: ${{ runner.OS }}-qt-${{ env.CACHE_KEY }}-${{ hashFiles('**/qtbase_5_12_8/*') }}
       - name: Use cached Qt 5.12.8.
-        if: steps.cache-qt.outputs.cache-hit == 'true'
+        if: >
+          steps.cache-qt.outputs.cache-hit == 'true' &&
+          env.NEED_REBUILD == 'true'
         run: |
           cd $LibrariesPath
           mv qt-cache Qt-5.12.8
